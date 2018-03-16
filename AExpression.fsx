@@ -18,13 +18,32 @@ let rec eval aExpr env : int =
     | Mul(a1, a2) -> eval a1 env *  eval a2 env
     | Sub(a1, a2) -> eval a1 env -  eval a2 env
 
-let rec fmt aExpr =
+let precidence aExpr = 
+    match aExpr with
+    | CstI _ -> 0
+    | Var _ -> 0
+    | Add _ -> 1
+    | Mul _ -> 2
+    | Sub _ -> 1
+
+let symbol aExpr = 
+    match aExpr with
+    | Add _ -> "+"
+    | Mul _ -> "*"
+    | Sub _ -> "-"
+    | _ -> ""
+
+let rec fmt' (parentPrec:int) aExpr =
+    let currentPrec = precidence aExpr
     match aExpr with
     | CstI i -> i.ToString()
     | Var name -> name
-    | Add(a1,a2) -> "(" + fmt a1 + "+" + fmt a2 + ")"
-    | Sub(a1,a2) -> "(" + fmt a1 + "-" + fmt a2 + ")"
-    | Mul(a1,a2) -> "(" + fmt a1 + "*" + fmt a2 + ")"
+    | Add(a1,a2) | Mul(a1,a2) | Sub(a1,a2) -> 
+        match currentPrec with
+        | x when x < parentPrec ->"(" + fmt' currentPrec a1 + symbol aExpr + fmt' currentPrec a2 + ")"
+        | _ -> fmt' currentPrec a1 + symbol aExpr + fmt' currentPrec a2
+
+let fmt aExpr = fmt' 0 aExpr
 
 //0+e => e
 //e+0 => e
@@ -98,7 +117,9 @@ let r1 = Sub(Var "v", Add(Var "w", Var "z"))
 let r2 = Mul(CstI 2, Sub(Var "v", Sub(Var "w", Var "z")))
 //r3: x+y+z+v
 let r3 = Add(Var "x", Add(Var "y", Add(Var "z", Var "v")))
-let expressions = [r0;r1;r2;r3]
+
+let r4 = Add(Var "x", Add(Var "y", Mul(Var "z", Var "v")))
+let expressions = [r0;r1;r2;r3;r4]
 for aExpr in expressions do
     printfn "expression %A" aExpr
     printfn "   %s=%d" (fmt aExpr) (eval aExpr env)
