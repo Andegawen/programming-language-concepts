@@ -8,25 +8,25 @@
 type expr = 
     | CstI of int
     | Var of string
-    | Let of string * expr * expr
+    | Let of (string * expr) list * expr
     | Prim of string * expr * expr
 
 (* Some closed expressions: *)
 
-let e1 = Let("z", CstI 17, Prim("+", Var "z", Var "z"))
+let e1 = Let(["z", CstI 17], Prim("+", Var "z", Var "z"))
 
-let e2 = Let("z", CstI 17, 
-            Prim("+", Let("z", CstI 22, Prim("*", CstI 100, Var "z")),
+let e2 = Let(["z", CstI 17], 
+            Prim("+", Let(["z", CstI 22], Prim("*", CstI 100, Var "z")),
                 Var "z"));;
 
-let e3 = Let("z", Prim("-", CstI 5, CstI 4), 
+let e3 = Let(["z", Prim("-", CstI 5, CstI 4)], 
             Prim("*", CstI 100, Var "z"))
 
-let e4 = Prim("+", Prim("+", CstI 20, Let("z", CstI 17, 
+let e4 = Prim("+", Prim("+", CstI 20, Let(["z", CstI 17], 
             Prim("+", Var "z", CstI 2))),
                 CstI 30)
 
-let e5 = Prim("*", CstI 2, Let("x", CstI 3, Prim("+", Var "x", CstI 4)))
+let e5 = Prim("*", CstI 2, Let(["x", CstI 3], Prim("+", Var "x", CstI 4)))
 
 (* ---------------------------------------------------------------------- *)
 
@@ -41,10 +41,13 @@ let rec eval e (env : (string * int) list) : int =
     match e with
     | CstI i            -> i
     | Var x             -> lookup env x 
-    | Let(x, erhs, ebody) -> 
-        let xval = eval erhs env
-        let env1 = (x, xval) :: env 
-        eval ebody env1
+    | Let(list, ebody) -> 
+        match list with
+        | [] -> eval ebody env
+        | (name,expr')::rest ->
+            let xval = eval expr' env
+            let env1 = (name, xval) :: env 
+            eval (Let(rest, ebody)) env1
     | Prim("+", e1, e2) -> eval e1 env + eval e2 env
     | Prim("*", e1, e2) -> eval e1 env * eval e2 env
     | Prim("-", e1, e2) -> eval e1 env - eval e2 env
