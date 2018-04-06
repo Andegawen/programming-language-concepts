@@ -73,9 +73,10 @@ let rec closedin (e : expr) (vs : string list) : bool =
     match e with
     | CstI i -> true
     | Var x  -> List.exists (fun y -> x=y) vs
-    | Let(x, erhs, ebody) -> 
-        let vs1 = x :: vs 
-        closedin erhs vs && closedin ebody vs1
+    | Let(list, ebody) ->
+        match list with
+        | [] -> closedin ebody vs
+        | (name, expr')::rest -> closedin expr' vs && closedin (Let (rest, ebody)) (name::vs)   
     | Prim(ope, e1, e2) -> closedin e1 vs && closedin e2 vs
 
 (* An expression is closed if it is closed in the empty environment *)
@@ -108,9 +109,12 @@ let rec nsubst (e : expr) (env : (string * expr) list) : expr =
     match e with
     | CstI i -> e
     | Var x  -> lookOrSelf env x
-    | Let(x, erhs, ebody) ->
-        let newenv = remove env x
-        Let(x, nsubst erhs env, nsubst ebody newenv)
+    | Let(list, ebody) ->
+        match list with
+        | [] -> ebody
+        | (name,expr')::rest ->
+            let newenv = remove env name
+            nsubst (Let(rest, nsubst expr' env)) newenv
     | Prim(ope, e1, e2) -> Prim(ope, nsubst e1 env, nsubst e2 env)
 
 (* Some expressions with free variables: *)
@@ -124,18 +128,18 @@ let e6s2 = nsubst e6 [("z", Prim("-", CstI 5, CstI 4))];;
 let e6s3 = nsubst e6 [("z", Prim("+", Var "z", Var "z"))];;
 
 // Shows that only z outside the Let gets substituted:
-let e7 = Prim("+", Let("z", CstI 22, Prim("*", CstI 5, Var "z")),
+let e7 = Prim("+", Let(["z", CstI 22], Prim("*", CstI 5, Var "z")),
                    Var "z");;
 
 let e7s1 = nsubst e7 [("z", CstI 100)];;
 
 // Shows that only the z in the Let rhs gets substituted
-let e8 = Let("z", Prim("*", CstI 22, Var "z"), Prim("*", CstI 5, Var "z"));;
+let e8 = Let(["z", Prim("*", CstI 22, Var "z")], Prim("*", CstI 5, Var "z"));;
 
 let e8s1 = nsubst e8 [("z", CstI 100)];;
 
 // Shows (wrong) capture of free variable z under the let:
-let e9 = Let("z", CstI 22, Prim("*", Var "y", Var "z"));;
+let e9 = Let(["z", CstI 22], Prim("*", Var "y", Var "z"));;
 
 let e9s1 = nsubst e9 [("y", Var "z")];;
 
@@ -153,10 +157,12 @@ let rec subst (e : expr) (env : (string * expr) list) : expr =
     match e with
     | CstI i -> e
     | Var x  -> lookOrSelf env x
-    | Let(x, erhs, ebody) ->
-    let newx = newVar x
-    let newenv = (x, Var newx) :: remove env x
-    Let(newx, subst erhs env, subst ebody newenv)
+    | Let(list, ebody) ->
+        match list with
+            | [] -> ebody
+            | (name,expr')::rest ->
+                let newenv = remove env name
+                subst (Let(rest, nsubst expr' env)) newenv
     | Prim(ope, e1, e2) -> Prim(ope, subst e1 env, subst e2 env)
 
 let e6s1a = subst e6 [("z", CstI 17)];;
@@ -205,8 +211,15 @@ let rec freevars e : string list =
     match e with
     | CstI i -> []
     | Var x  -> [x]
-    | Let(x, erhs, ebody) -> 
-        union (freevars erhs, minus (freevars ebody, [x]))
+    | Let(list, ebody) ->
+        match list with
+        | [] -> freevars ebody
+        | (name, expr')::rest -> 
+            let s1 = freevars expr'
+            let s2 = freevars (Let(rest, ebody))
+            union(s1, s2)
+    // | Let(x, erhs, ebody) -> 
+    //     union (freevars erhs, minus (freevars ebody, [x]))
     | Prim(ope, e1, e2) -> union (freevars e1, freevars e2)
 
 (* Alternative definition of closed *)
@@ -239,9 +252,12 @@ let rec tcomp (e : expr) (cenv : string list) : texpr =
     match e with
     | CstI i -> TCstI i
     | Var x  -> TVar (getindex cenv x)
-    | Let(x, erhs, ebody) -> 
-        let cenv1 = x :: cenv 
-        TLet(tcomp erhs cenv, tcomp ebody cenv1)
+    | Let(list, ebody) -> 
+        match list with 
+        | [] -> tcomp ebody cenv
+        | (name, expr')::rest ->
+            let cenv1 = name :: cenv 
+            tcomp (Let(rest, ebody)) cenv1
     | Prim(ope, e1, e2) -> TPrim(ope, tcomp e1 cenv, tcomp e2 cenv)
 
 (* Evaluation of target expressions with variable indexes.  The
@@ -349,8 +365,11 @@ let rec scomp (e : expr) (cenv : stackvalue list) : sinstr list =
     match e with
     | CstI i -> [SCstI i]
     | Var x  -> [SVar (getindex cenv (Bound x))]
-    | Let(x, erhs, ebody) -> 
-        scomp erhs cenv @ scomp ebody (Bound x :: cenv) @ [SSwap; SPop]
+    | Let(list, ebody) ->
+        match list with
+        | [] ->  scomp ebody cenv
+        | (name, expr')::rest ->
+            scomp expr' cenv @ scomp ebody (Bound name :: cenv) @ [SSwap; SPop]
     | Prim("+", e1, e2) -> 
         scomp e1 cenv @ scomp e2 (Value :: cenv) @ [SAdd] 
     | Prim("-", e1, e2) -> 
