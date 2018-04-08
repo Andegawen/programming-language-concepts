@@ -12,11 +12,11 @@ Exercises from book "Programming Language Concepts"
 * the interpreter is often called an **abstract machine** (= virtual machine)
 
 ## exercise 2
-Comparision of single with implementaion of multiple
+Comparision of single with implementaion of multiple   
 good functions
 * eval
 * closedin
-* scomp
+* scomp  
 wrong functions
 * nsubst (e6 is good; e7 is wrong)
 * subst  (e6 is good; e7 is wrong)
