@@ -28,6 +28,9 @@ let e4 = Prim("+", Prim("+", CstI 20, Let(["z", CstI 17],
 
 let e5 = Prim("*", CstI 2, Let(["x", CstI 3], Prim("+", Var "x", CstI 4)))
 
+
+let defExpressions = ["e1",e1;"e2",e2;"e3",e3;"e4",e4;"e5",e5]
+
 (* ---------------------------------------------------------------------- *)
 
 (* Evaluation of expressions with variables and bindings *)
@@ -55,6 +58,10 @@ let rec eval e (env : (string * int) list) : int =
 
 let run e = eval e []
 
+printfn "eval"
+defExpressions |> List.iter (fun e->
+    let exTitle, exp = e;
+    printfn "%s val: %d" exTitle  (eval exp []))
 (* ---------------------------------------------------------------------- *)
 
 (* Closedness *)
@@ -83,7 +90,10 @@ let rec closedin (e : expr) (vs : string list) : bool =
 
 let closed1 e = closedin e []
 
-
+printfn "closedin"
+defExpressions |> List.iter (fun e->
+    let exTitle, exp = e;
+    printfn "%s is closed: %b" exTitle (closed1 exp))
 (* ---------------------------------------------------------------------- *)
 
 (* Substitution of expressions for variables *)
@@ -146,6 +156,14 @@ let e9s1 = nsubst e9 [("y", Var "z")];;
 // 
 let e9s2 = nsubst e9 [("z", Prim("-", CstI 5, CstI 4))];;
 
+
+
+printfn "nsubst"
+["e6s1",e6s1;"e6s2",e6s2;"e6s3",e6s3;"e7s1",e7s1;"e8s1",e8s1;"e9s1",e9s1;"e9s2",e9s2] |> 
+    List.iter (fun e->
+        let title, expr = e;
+        printfn "title '%s' expr result: %A" title expr)
+
 let newVar : string -> string = 
     let n = ref 0
     let varMaker x = (n := 1 + !n; x + string (!n))
@@ -181,6 +199,12 @@ let e8s1a = subst e8 [("z", CstI 100)];;
 // Shows renaming of bound variable z (to z3), avoiding capture of free z
 let e9s1a = subst e9 [("y", Var "z")];;
 
+
+printfn "nsubst"
+["e6s1",e6s1a;"e6s2",e6s2a;"e6s3",e6s3a;"e7s1",e7s1a;"e8s1",e8s1a;"e9s1",e9s1a] |> 
+    List.iter (fun e->
+        let title, expr = e;
+        printfn "title '%s' expr result: %A" title expr)
 (* ---------------------------------------------------------------------- *)
 
 (* Free variables *)
@@ -226,6 +250,10 @@ let rec freevars e : string list =
 
 let closed2 e = (freevars e = []);;
 
+printfn "freevars"
+defExpressions |> List.iter (fun e-> 
+    let exName, ex = e;
+    printfn "%s is freevars: '%A'" exName (freevars ex))
 
 (* ---------------------------------------------------------------------- *)
 
@@ -260,6 +288,12 @@ let rec tcomp (e : expr) (cenv : string list) : texpr =
             tcomp (Let(rest, ebody)) cenv1
     | Prim(ope, e1, e2) -> TPrim(ope, tcomp e1 cenv, tcomp e2 cenv)
 
+
+
+printfn "tcomp"
+defExpressions |> List.iter (fun e-> 
+    let exName, ex = e;
+    printfn "%s t comp: '%A'" exName (tcomp ex []))
 (* Evaluation of target expressions with variable indexes.  The
    run-time environment renv is a list of variable values (ints).  *)
 
@@ -378,10 +412,10 @@ let rec scomp (e : expr) (cenv : stackvalue list) : sinstr list =
         scomp e1 cenv @ scomp e2 (Value :: cenv) @ [SMul] 
     | Prim _ -> failwith "scomp: unknown operator"
 
-let s1 = scomp e1 []
-let s2 = scomp e2 []
-let s3 = scomp e3 []
-let s5 = scomp e5 []
+printfn "scomp"
+defExpressions |> List.iter (fun e-> 
+    let exName, ex = e;
+    printfn "%s scomp: '%A'" exName (scomp ex []))
 
 (* Output the integers in list inss to the text file called fname: *)
 
