@@ -1,0 +1,48 @@
+eval
+e1 val: 34
+e2 val: 2217
+e3 val: 100
+e4 val: 69
+e5 val: 14
+closedin
+e1 is closed: true
+e2 is closed: true
+e3 is closed: true
+e4 is closed: true
+e5 is closed: true
+nsubst
+title 'e6s1' expr result: Prim ("+",Var "y",CstI 17)
+title 'e6s2' expr result: Prim ("+",Var "y",Prim ("-",CstI 5,CstI 4))
+title 'e6s3' expr result: Prim ("+",Var "y",Prim ("+",Var "z",Var "z"))
+title 'e7s1' expr result: Prim ("+",Let ("z",CstI 22,Prim ("*",CstI 5,Var "z")),CstI 100)
+title 'e8s1' expr result: Let ("z",Prim ("*",CstI 22,CstI 100),Prim ("*",CstI 5,Var "z"))
+title 'e9s1' expr result: Let ("z",CstI 22,Prim ("*",Var "z",Var "z"))
+title 'e9s2' expr result: Let ("z",CstI 22,Prim ("*",Var "y",Var "z"))
+nsubst
+title 'e6s1' expr result: Prim ("+",Var "y",CstI 17)
+title 'e6s2' expr result: Prim ("+",Var "y",Prim ("-",CstI 5,CstI 4))
+title 'e6s3' expr result: Prim ("+",Var "y",Prim ("+",Var "z",Var "z"))
+title 'e7s1' expr result: Prim ("+",Let ("z1",CstI 22,Prim ("*",CstI 5,Var "z1")),CstI 100)
+title 'e8s1' expr result: Let ("z2",Prim ("*",CstI 22,CstI 100),Prim ("*",CstI 5,Var "z2"))
+title 'e9s1' expr result: Let ("z3",CstI 22,Prim ("*",Var "z",Var "z3"))
+freevars
+e1 is freevars: '[]'
+e2 is freevars: '[]'
+e3 is freevars: '[]'
+e4 is freevars: '[]'
+e5 is freevars: '[]'
+tcomp
+e1 t comp: 'TLet (TCstI 17,TPrim ("+",TVar 0,TVar 0))'
+e2 t comp: 'TLet (TCstI 17,TPrim ("+",TLet (TCstI 22,TPrim ("*",TCstI 100,TVar 0)),TVar 0))'
+e3 t comp: 'TLet (TPrim ("-",TCstI 5,TCstI 4),TPrim ("*",TCstI 100,TVar 0))'
+e4 t comp: 'TPrim
+  ("+",TPrim ("+",TCstI 20,TLet (TCstI 17,TPrim ("+",TVar 0,TCstI 2))),TCstI 30)'
+e5 t comp: 'TPrim ("*",TCstI 2,TLet (TCstI 3,TPrim ("+",TVar 0,TCstI 4)))'
+scomp
+e1 scomp: '[SCstI 17; SVar 0; SVar 1; SAdd; SSwap; SPop]'
+e2 scomp: '[SCstI 17; SCstI 22; SCstI 100; SVar 1; SMul; SSwap; SPop; SVar 1; SAdd; SSwap;
+ SPop]'
+e3 scomp: '[SCstI 5; SCstI 4; SSub; SCstI 100; SVar 1; SMul; SSwap; SPop]'
+e4 scomp: '[SCstI 20; SCstI 17; SVar 0; SCstI 2; SAdd; SSwap; SPop; SAdd; SCstI 30; SAdd]'
+e5 scomp: '[SCstI 2; SCstI 3; SVar 0; SCstI 4; SAdd; SSwap; SPop; SMul]'
+Press enter to close script...

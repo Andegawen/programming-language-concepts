@@ -10,3 +10,15 @@ Exercises from book "Programming Language Concepts"
 * **closed expression** - no variable occurs free in the expression
 * **variable capture**
 * the interpreter is often called an **abstract machine** (= virtual machine)
+
+## exercise 2
+Comparision of single with implementaion of multiple
+good functions
+* eval
+* closedin
+* scomp
+wrong functions
+* nsubst (e6 is good; e7 is wrong)
+* subst  (e6 is good; e7 is wrong)
+* freevars
+* tcomp

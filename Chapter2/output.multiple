@@ -1,0 +1,47 @@
+eval
+e1 val: 34
+e2 val: 2217
+e3 val: 100
+e4 val: 69
+e5 val: 14
+closedin
+e1 is closed: true
+e2 is closed: true
+e3 is closed: true
+e4 is closed: true
+e5 is closed: true
+nsubst
+title 'e6s1' expr result: Prim ("+",Var "y",CstI 17)
+title 'e6s2' expr result: Prim ("+",Var "y",Prim ("-",CstI 5,CstI 4))
+title 'e6s3' expr result: Prim ("+",Var "y",Prim ("+",Var "z",Var "z"))
+title 'e7s1' expr result: Prim ("+",CstI 22,CstI 100)
+title 'e8s1' expr result: Prim ("*",CstI 22,CstI 100)
+title 'e9s1' expr result: CstI 22
+title 'e9s2' expr result: CstI 22
+nsubst
+title 'e6s1' expr result: Prim ("+",Var "y",CstI 17)
+title 'e6s2' expr result: Prim ("+",Var "y",Prim ("-",CstI 5,CstI 4))
+title 'e6s3' expr result: Prim ("+",Var "y",Prim ("+",Var "z",Var "z"))
+title 'e7s1' expr result: Prim ("+",CstI 22,CstI 100)
+title 'e8s1' expr result: Prim ("*",CstI 22,CstI 100)
+title 'e9s1' expr result: CstI 22
+freevars
+e1 is freevars: '["z"]'
+e2 is freevars: '["z"]'
+e3 is freevars: '["z"]'
+e4 is freevars: '["z"]'
+e5 is freevars: '["x"]'
+tcomp
+e1 t comp: 'TPrim ("+",TVar 0,TVar 0)'
+e2 t comp: 'TPrim ("+",TPrim ("*",TCstI 100,TVar 0),TVar 0)'
+e3 t comp: 'TPrim ("*",TCstI 100,TVar 0)'
+e4 t comp: 'TPrim ("+",TPrim ("+",TCstI 20,TPrim ("+",TVar 0,TCstI 2)),TCstI 30)'
+e5 t comp: 'TPrim ("*",TCstI 2,TPrim ("+",TVar 0,TCstI 4))'
+scomp
+e1 scomp: '[SCstI 17; SVar 0; SVar 1; SAdd; SSwap; SPop]'
+e2 scomp: '[SCstI 17; SCstI 22; SCstI 100; SVar 1; SMul; SSwap; SPop; SVar 1; SAdd; SSwap;
+ SPop]'
+e3 scomp: '[SCstI 5; SCstI 4; SSub; SCstI 100; SVar 1; SMul; SSwap; SPop]'
+e4 scomp: '[SCstI 20; SCstI 17; SVar 0; SCstI 2; SAdd; SSwap; SPop; SAdd; SCstI 30; SAdd]'
+e5 scomp: '[SCstI 2; SCstI 3; SVar 0; SCstI 4; SAdd; SSwap; SPop; SMul]'
+Press enter to close script...
