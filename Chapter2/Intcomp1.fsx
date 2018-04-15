@@ -121,13 +121,13 @@ let rec nsubst (e : expr) (env : (string * expr) list) : expr =
     | Var x  -> lookOrSelf env x
     | Let(list, ebody) ->
         match list with
-        | [] -> ebody
-        | (name,expr')::rest ->
-            let newenv = remove env name
-            nsubst (Let(rest, nsubst expr' env)) newenv
+        | [] -> nsubst ebody env
+        | (name, expr')::rest ->
+            let newenv= remove env name
+            //CstI 0
+            let allSubstitued = rest |> List.fold (fun acc (n1,e1)->CstI 0) (nsubst expr' env)
+            Let([name, allSubstitued], nsubst ebody newenv)
     | Prim(ope, e1, e2) -> Prim(ope, nsubst e1 env, nsubst e2 env)
-
-(* Some expressions with free variables: *)
 
 let e6 = Prim("+", Var "y", Var "z");;
 
@@ -177,10 +177,13 @@ let rec subst (e : expr) (env : (string * expr) list) : expr =
     | Var x  -> lookOrSelf env x
     | Let(list, ebody) ->
         match list with
-            | [] -> ebody
+            | [] -> subst ebody env
             | (name,expr')::rest ->
-                let newenv = remove env name
-                subst (Let(rest, nsubst expr' env)) newenv
+                let newName = newVar name
+                let newenv = (name, Var newName) :: remove env name
+                //CstI 0
+                let allSubstitued = rest |> List.fold (fun acc (n1,e1)->CstI 0) (subst expr' env)
+                Let([name, allSubstitued], subst ebody newenv)
     | Prim(ope, e1, e2) -> Prim(ope, subst e1 env, subst e2 env)
 
 let e6s1a = subst e6 [("z", CstI 17)];;
@@ -200,7 +203,7 @@ let e8s1a = subst e8 [("z", CstI 100)];;
 let e9s1a = subst e9 [("y", Var "z")];;
 
 
-printfn "nsubst"
+printfn "subst"
 ["e6s1",e6s1a;"e6s2",e6s2a;"e6s3",e6s3a;"e7s1",e7s1a;"e8s1",e8s1a;"e9s1",e9s1a] |> 
     List.iter (fun e->
         let title, expr = e;
