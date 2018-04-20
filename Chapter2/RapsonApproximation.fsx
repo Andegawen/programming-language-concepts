@@ -1,5 +1,3 @@
-//a(next)= (a_i + n/a_i)/2
-
 //get approximation
 let next n a_i: float = (a_i+n/a_i)/2.0
 
