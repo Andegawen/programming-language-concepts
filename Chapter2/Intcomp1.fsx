@@ -139,7 +139,6 @@ let e6s3 = nsubst e6 [("z", Prim("+", Var "z", Var "z"))];;
 // Shows that only z outside the Let gets substituted:
 let e7 = Prim("+", Let(["z", CstI 22], Prim("*", CstI 5, Var "z")),
                    Var "z");;
-
 let e7s1 = nsubst e7 [("z", CstI 100)];;
 
 // Shows that only the z in the Let rhs gets substituted
@@ -155,10 +154,12 @@ let e9s1 = nsubst e9 [("y", Var "z")];;
 // 
 let e9s2 = nsubst e9 [("z", Prim("-", CstI 5, CstI 4))];;
 
-
+let e10 = Let([("x", CstI 3); ("y", CstI 4)], Prim("+", Var "x", Prim("+", Var "y", Var "z")))
+let e10s1 = nsubst e10 [("z", CstI 100)]
+let e10s2 = nsubst e10 [("x", CstI 100)]                   
 
 printfn "nsubst"
-["e6s1",e6s1;"e6s2",e6s2;"e6s3",e6s3;"e7s1",e7s1;"e8s1",e8s1;"e9s1",e9s1;"e9s2",e9s2] |> 
+["e6s1",e6s1;"e6s2",e6s2;"e6s3",e6s3;"e7s1",e7s1;"e8s1",e8s1;"e9s1",e9s1;"e9s2",e9s2;"e10s1",e10s1;"e10s2",e10s2] |> 
     List.iter (fun e->
         let title, expr = e;
         printfn "title '%s' expr result: %A" title expr)
@@ -180,7 +181,7 @@ let rec subst (e : expr) (env : (string * expr) list) : expr =
             | _ ->
                 let newenv= list |> List.fold (fun accEnv (n1,e1)-> 
                     let newName = newVar n1
-                    (n1, Var newName) :: remove accEnv n1) env
+                    (newName, Var newName) :: remove accEnv n1) env
                 let allErhsSubstituted = list |> List.map (fun (name, expr')-> (name,subst expr' env))
                 Let(allErhsSubstituted, nsubst ebody newenv)
     | Prim(ope, e1, e2) -> Prim(ope, subst e1 env, subst e2 env)
@@ -201,9 +202,11 @@ let e8s1a = subst e8 [("z", CstI 100)];;
 // Shows renaming of bound variable z (to z3), avoiding capture of free z
 let e9s1a = subst e9 [("y", Var "z")];;
 
+let e10s1a = subst e10 [("z", CstI 100)]                   
 
+let e10s2a = subst e10 [("x", CstI 100)]                   
 printfn "subst"
-["e6s1",e6s1a;"e6s2",e6s2a;"e6s3",e6s3a;"e7s1",e7s1a;"e8s1",e8s1a;"e9s1",e9s1a] |> 
+["e6s1",e6s1a;"e6s2",e6s2a;"e6s3",e6s3a;"e7s1",e7s1a;"e8s1",e8s1a;"e9s1",e9s1a;"e10s1",e10s1a;"e10s2",e10s2a] |> 
     List.iter (fun e->
         let title, expr = e;
         printfn "title '%s' expr result: %A" title expr)
