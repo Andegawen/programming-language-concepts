@@ -122,11 +122,10 @@ let rec nsubst (e : expr) (env : (string * expr) list) : expr =
     | Let(list, ebody) ->
         match list with
         | [] -> nsubst ebody env
-        | (name, expr')::rest ->
-            let newenv= remove env name
-            //CstI 0
-            let allSubstitued = rest |> List.fold (fun acc (n1,e1)->CstI 0) (nsubst expr' env)
-            Let([name, allSubstitued], nsubst ebody newenv)
+        | rest ->
+            let newenv= rest |> List.fold (fun accEnv (n1,e1)->remove accEnv n1) env
+            let allErhsSubstituted = rest |> List.map (fun (name, expr')-> (name,nsubst expr' env))
+            Let(allErhsSubstituted, nsubst ebody newenv)
     | Prim(ope, e1, e2) -> Prim(ope, nsubst e1 env, nsubst e2 env)
 
 let e6 = Prim("+", Var "y", Var "z");;
@@ -178,12 +177,12 @@ let rec subst (e : expr) (env : (string * expr) list) : expr =
     | Let(list, ebody) ->
         match list with
             | [] -> subst ebody env
-            | (name,expr')::rest ->
-                let newName = newVar name
-                let newenv = (name, Var newName) :: remove env name
-                //CstI 0
-                let allSubstitued = rest |> List.fold (fun acc (n1,e1)->CstI 0) (subst expr' env)
-                Let([name, allSubstitued], subst ebody newenv)
+            | _ ->
+                let newenv= list |> List.fold (fun accEnv (n1,e1)-> 
+                    let newName = newVar n1
+                    (n1, Var newName) :: remove accEnv n1) env
+                let allErhsSubstituted = list |> List.map (fun (name, expr')-> (name,subst expr' env))
+                Let(allErhsSubstituted, nsubst ebody newenv)
     | Prim(ope, e1, e2) -> Prim(ope, subst e1 env, subst e2 env)
 
 let e6s1a = subst e6 [("z", CstI 17)];;
