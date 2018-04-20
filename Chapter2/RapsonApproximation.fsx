@@ -1,23 +1,23 @@
 //a(next)= (a_i + n/a_i)/2
 
-let Number = 567.0;
 let next n x: float = (x+n/x)/2.0
 
-let rec repeat (a0:float) : seq<float>   = 
-    let a1 = next Number a0;
+let rec repeat (func:float->float) (a0:float) : seq<float>   = 
+    let a1 = func a0;
     seq {
         yield a1
-        yield! repeat a1 
+        yield! repeat func a1 
      }
      
-
 let rec within (eps:float) (sequence:seq<float>) :float =
-    match ((Seq.head sequence), Seq.skip 1 sequence) with
-    | a, rest when abs(a-Seq.head rest) <= eps -> Seq.head rest
-    | _, rest -> within eps rest
+    let first = Seq.head sequence;
+    let rest = Seq.skip 1 sequence
+    let second = Seq.head rest;
+    if abs(first-second) <= eps then second else within eps rest
 
-let magicSqrt a0 eps = within eps (repeat a0)
-magicSqrt 300.0 0.01 |> printfn "%A"    
+let magicSqrt (n:float) a0 eps = within eps (repeat (next n) a0)
+let Number = 9.0;
+magicSqrt Number (Number/2.0) 0.01 |> printfn "%A"    
 
 let rec sqrtStep (x : float) (current : float) (eps: float) : float = 
     let nxt = (next x current)
